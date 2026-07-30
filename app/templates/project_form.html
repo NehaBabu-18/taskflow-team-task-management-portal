@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Project - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="h3">
+            <i class="fas fa-folder"></i> {{ action }} Project
+        </h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('projects.list_projects') }}">Projects</a></li>
+                <li class="breadcrumb-item active">{{ action }}</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Form -->
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ action }} Project Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        <!-- Project Name -->
+                        <div class="form-group mb-3">
+                            <label for="project_name" class="form-label">
+                                <i class="fas fa-heading"></i> Project Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="project_name" name="project_name"
+                                value="{{ project.project_name if project else '' }}" placeholder="Enter project name"
+                                required>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group mb-3">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left"></i> Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                placeholder="Enter project description">{{ project.description if project else '' }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <!-- Start Date -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="start_date" class="form-label">
+                                        <i class="fas fa-calendar-alt"></i> Start Date
+                                    </label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date"
+                                        value="{{ project.start_date.strftime('%Y-%m-%d') if project and project.start_date else '' }}">
+                                </div>
+                            </div>
+
+                            <!-- End Date -->
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="end_date" class="form-label">
+                                        <i class="fas fa-calendar-alt"></i> End Date
+                                    </label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date"
+                                        value="{{ project.end_date.strftime('%Y-%m-%d') if project and project.end_date else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-save"></i> {{ action }} Project
+                            </button>
+                            <a href="{{ url_for('projects.list_projects') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

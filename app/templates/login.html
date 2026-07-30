@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Login - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid"
+    style="min-height: 90vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="row w-100">
+        <div class="col-md-6 mx-auto">
+            <div class="card shadow-lg" style="border-radius: 10px; border: none;">
+                <div class="card-body p-5">
+                    <!-- Logo/Title -->
+                    <div class="text-center mb-4">
+                        <h1 style="color: #4e73df; font-weight: 700;">
+                            <i class="fas fa-tasks"></i> TaskFlow
+                        </h1>
+                        <p class="text-muted">Team Task Management Portal</p>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form method="POST" novalidate>
+                        <div class="form-group mb-3">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i> Username or Email
+                            </label>
+                            <input type="text" class="form-control" id="username" name="username"
+                                placeholder="Enter your username or email" required>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i> Password
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="Enter your password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block w-100 py-2 mb-3">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <!-- Register Link -->
+                    <div class="text-center">
+                        <p class="text-muted">Don't have an account?</p>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-user-plus"></i> Create Account
+                        </a>
+                    </div>
+
+                    <!-- Demo Credentials -->
+                    <div class="alert alert-info mt-4" role="alert">
+                        <small>
+                            <strong><i class="fas fa-info-circle"></i> Demo Credentials:</strong><br>
+                            Username: admin<br>
+                            Password: password123
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.task_name }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3">
+                <i class="fas fa-tasks"></i> {{ task.task_name }}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('tasks.list_tasks') }}">Tasks</a></li>
+                    <li class="breadcrumb-item active">{{ task.task_name }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="btn btn-warning me-2">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <form method="POST" action="{{ url_for('tasks.delete_task', task_id=task.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger btn-delete" onclick="return confirm('Delete this task?')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task Information -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Task Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Project:</strong></p>
+                            <p><a href="{{ url_for('projects.view_project', project_id=task.project_id) }}">
+                                    {{ task.project.project_name }}
+                                </a></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Due Date:</strong></p>
+                            <p>{{ task.due_date.strftime('%B %d, %Y') if task.due_date else 'Not set' }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong></p>
+                            <span class="badge badge-{{ task.status|lower|replace(' ', '-') }} py-2 px-3">
+                                {{ task.status }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Priority:</strong></p>
+                            <span class="badge badge-{{ task.priority|lower }} py-2 px-3">
+                                {{ task.priority }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <p><strong>Description:</strong></p>
+                            <p>{{ task.description if task.description else 'No description provided' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Task Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('tasks.edit_task', task_id=task.id) }}">
+                        <div class="form-group mb-3">
+                            <label for="status_select" class="form-label">Update Status:</label>
+                            <select class="form-select task-status-select" data-task-id="{{ task.id }}" name="status">
+                                <option value="Pending" {% if task.status=='Pending' %}selected{% endif %}>Pending
+                                </option>
+                                <option value="In Progress" {% if task.status=='In Progress' %}selected{% endif %}>In
+                                    Progress</option>
+                                <option value="Completed" {% if task.status=='Completed' %}selected{% endif %}>Completed
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-save"></i> Update
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar"></i> Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created:</strong></p>
+                    <p class="text-muted">{{ task.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+
+                    <p class="mt-3"><strong>Last Updated:</strong></p>
+                    <p class="text-muted">{{ task.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignments -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-users"></i> Assignments</h5>
+            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#assignModal">
+                <i class="fas fa-user-plus"></i> Assign User
+            </button>
+        </div>
+        <div class="card-body">
+            {% if assigned_users %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Assigned Date</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in assigned_users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% set assignment = task.assignments[loop.index0] %}
+                                {{ assignment.assigned_date.strftime('%b %d, %Y') }}
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ user.role }}">{{ user.role }}</span>
+                            </td>
+                            <td>
+                                {% set assignment = task.assignments[loop.index0] %}
+                                <form method="POST"
+                                    action="{{ url_for('assignments.remove_assignment', assignment_id=assignment.id) }}"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger remove-assignment-btn">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-user-slash" style="font-size: 3rem; color: #ccc;"></i>
+                <p class="text-muted mt-3">No users assigned to this task</p>
+                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#assignModal">
+                    <i class="fas fa-user-plus"></i> Assign User
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign User to Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="user-select" class="form-label">Select User:</label>
+                    <select class="form-select" id="user-select">
+                        <option value="">Choose a user...</option>
+                        {% for user in all_users %}
+                        {% if user not in assigned_users %}
+                        <option value="{{ user.id }}">{{ user.username }} ({{ user.email }})</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitTaskAssignment()">
+                    <i class="fas fa-check"></i> Assign
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

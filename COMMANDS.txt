@@ -1,0 +1,332 @@
+========================================
+TaskFlow - Terminal Commands Reference
+========================================
+
+WINDOWS USERS - Copy and paste these commands into Command Prompt or PowerShell
+
+========================================
+1. CREATE VIRTUAL ENVIRONMENT (Windows)
+========================================
+python -m venv venv
+venv\Scripts\activate
+
+========================================
+2. INSTALL DEPENDENCIES
+========================================
+pip install -r requirements.txt
+
+========================================
+3. CREATE DATABASE (Windows)
+========================================
+mysql -u root -p
+CREATE DATABASE taskflow_db;
+USE taskflow_db;
+source database.sql;
+EXIT;
+
+========================================
+4. RUN APPLICATION
+========================================
+python app.py
+
+========================================
+5. DEACTIVATE VIRTUAL ENVIRONMENT
+========================================
+deactivate
+
+========================================
+6. CHECK INSTALLED PACKAGES
+========================================
+pip list
+
+========================================
+7. UPGRADE PIP
+========================================
+python -m pip install --upgrade pip
+
+========================================
+8. CHECK PYTHON VERSION
+========================================
+python --version
+
+========================================
+9. CHECK FLASK INSTALLATION
+========================================
+python -c "import flask; print(flask.__version__)"
+
+========================================
+LINUX/macOS USERS - Copy and paste these commands into Terminal
+
+========================================
+1. CREATE VIRTUAL ENVIRONMENT (Linux/macOS)
+========================================
+python3 -m venv venv
+source venv/bin/activate
+
+========================================
+2. INSTALL DEPENDENCIES
+========================================
+pip install -r requirements.txt
+
+========================================
+3. CREATE DATABASE (Linux/macOS)
+========================================
+mysql -u root -p
+CREATE DATABASE taskflow_db;
+USE taskflow_db;
+source database.sql;
+EXIT;
+
+========================================
+4. RUN APPLICATION
+========================================
+python app.py
+
+========================================
+5. DEACTIVATE VIRTUAL ENVIRONMENT
+========================================
+deactivate
+
+========================================
+6. START MySQL SERVICE
+========================================
+# macOS
+brew services start mysql
+
+# Linux (Ubuntu/Debian)
+sudo service mysql start
+
+# Linux (CentOS)
+sudo systemctl start mysqld
+
+========================================
+7. CREATE USER IN PYTHON SHELL
+========================================
+python
+>>> from app import create_app, db
+>>> from app.models import User
+>>> app = create_app()
+>>> with app.app_context():
+...     user = User(username='testuser', email='test@email.com')
+...     user.set_password('password123')
+...     db.session.add(user)
+...     db.session.commit()
+
+========================================
+8. RESET DATABASE
+========================================
+python
+>>> from app import create_app, db
+>>> app = create_app()
+>>> with app.app_context():
+...     db.drop_all()
+...     db.create_all()
+
+========================================
+BACKUP & RESTORE
+========================================
+
+Backup Database:
+mysqldump -u root -p taskflow_db > backup.sql
+
+Restore Database:
+mysql -u root -p taskflow_db < backup.sql
+
+========================================
+DATABASE RESET (Full)
+========================================
+
+Windows:
+mysql -u root -p -e "DROP DATABASE taskflow_db;"
+mysql -u root -p < database.sql
+
+Linux/macOS:
+mysql -u root -p -e "DROP DATABASE taskflow_db;"
+mysql -u root -p < database.sql
+
+========================================
+DEPLOYMENT WITH GUNICORN
+========================================
+
+Install Gunicorn:
+pip install gunicorn
+
+Run with Gunicorn:
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+
+========================================
+QUICK SETUP (Windows)
+========================================
+
+1. Set Execution Policy:
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+
+2. Activate and Install:
+   .\venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+
+3. Create Database:
+   mysql -u root -p < database.sql
+
+4. Run:
+   python app.py
+
+========================================
+QUICK SETUP (Linux/macOS)
+========================================
+
+1. Make setup executable:
+   chmod +x setup.sh
+
+2. Run setup:
+   ./setup.sh
+
+3. Create database:
+   mysql -u root -p < database.sql
+
+4. Run:
+   python app.py
+
+========================================
+TROUBLESHOOTING COMMANDS
+========================================
+
+Find process on port 5000 (Windows):
+netstat -ano | findstr ":5000"
+
+Kill process (Windows):
+taskkill /PID <PID> /F
+
+Find process on port 5000 (Linux/macOS):
+lsof -i :5000
+
+Kill process (Linux/macOS):
+kill -9 <PID>
+
+Check MySQL status (Windows):
+sc query MySQL57
+
+Start MySQL (Windows):
+net start MySQL57
+
+Stop MySQL (Windows):
+net stop MySQL57
+
+========================================
+LOG OUTPUT EXAMPLES
+========================================
+
+Expected successful startup:
+   * Running on http://127.0.0.1:5000
+   * Debug mode: on
+   * Debugger PIN: [PIN number]
+   Press CTRL+C to quit
+
+Expected database connection error:
+   sqlalchemy.exc.OperationalError: 
+   Can't connect to MySQL server on 'localhost'
+
+Solution:
+   1. Check MySQL is running
+   2. Verify database credentials
+   3. Ensure database exists
+
+========================================
+ENVIRONMENT VARIABLES (Advanced)
+========================================
+
+Set in terminal (Windows - Command Prompt):
+set FLASK_ENV=development
+set FLASK_DEBUG=1
+python app.py
+
+Set in terminal (Linux/macOS):
+export FLASK_ENV=development
+export FLASK_DEBUG=1
+python app.py
+
+========================================
+PYTHON SHELL COMMANDS
+========================================
+
+Enter Python shell:
+python
+
+Check database connection:
+>>> from app import create_app, db
+>>> app = create_app()
+>>> with app.app_context():
+...     print(db.engine.url)
+
+List all users:
+>>> from app.models import User
+>>> users = User.query.all()
+>>> for u in users: print(u.username)
+
+Count tasks:
+>>> from app.models import Task
+>>> Task.query.count()
+
+Exit Python shell:
+>>> exit()
+
+========================================
+FAQ & QUICK FIXES
+========================================
+
+Q: Python command not found?
+A: Add Python to PATH or use python3
+
+Q: pip command not found?
+A: Use python -m pip instead: python -m pip install -r requirements.txt
+
+Q: Module not found errors?
+A: Activate venv and reinstall: pip install -r requirements.txt
+
+Q: Port 5000 in use?
+A: Kill process or use different port: app.run(port=5001)
+
+Q: MySQL connection refused?
+A: Start MySQL service or check credentials
+
+Q: "source" command not recognized (Windows)?
+A: Use: type database.sql | mysql -u root -p
+
+Q: Permission denied on setup.sh?
+A: Run: chmod +x setup.sh
+
+Q: Database changes not showing?
+A: Clear browser cache (Ctrl+F5 / Cmd+Shift+R) or restart Flask
+
+========================================
+ADDITIONAL RESOURCES
+========================================
+
+Official Documentation:
+- Flask: https://flask.palletsprojects.com/
+- SQLAlchemy: https://docs.sqlalchemy.org/
+- Bootstrap: https://getbootstrap.com/
+- MySQL: https://dev.mysql.com/doc/
+
+For detailed setup: See SETUP.md
+For quick reference: See QUICKSTART.md
+For full documentation: See README.md
+
+========================================
+Default Login Credentials
+========================================
+Username: admin
+Password: password123
+URL: http://localhost:5000
+
+========================================
+Need Help?
+========================================
+
+1. Check SETUP.md for detailed instructions
+2. Check README.md for complete documentation
+3. Review error messages in browser console (F12)
+4. Check Flask debug output in terminal
+5. Verify MySQL is running: mysql -u root -p
+
+Last Updated: 2024

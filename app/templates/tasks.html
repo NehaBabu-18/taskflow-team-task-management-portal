@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-tasks"></i> Tasks
+        </h1>
+        <a href="{{ url_for('tasks.create_task') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Task
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="search-input" placeholder="Search tasks...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="status-filter">
+                <option value="">All Status</option>
+                <option value="Pending" {% if filter_status=='Pending' %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if filter_status=='In Progress' %}selected{% endif %}>In Progress
+                </option>
+                <option value="Completed" {% if filter_status=='Completed' %}selected{% endif %}>Completed</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="priority-filter">
+                <option value="">All Priority</option>
+                <option value="Low" {% if filter_priority=='Low' %}selected{% endif %}>Low</option>
+                <option value="Medium" {% if filter_priority=='Medium' %}selected{% endif %}>Medium</option>
+                <option value="High" {% if filter_priority=='High' %}selected{% endif %}>High</option>
+                <option value="Urgent" {% if filter_priority=='Urgent' %}selected{% endif %}>Urgent</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tasks List -->
+    {% if tasks %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task Name</th>
+                                    <th>Project</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Due Date</th>
+                                    <th>Assigned To</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in tasks %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ task.task_name }}</strong>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('projects.view_project', project_id=task.project_id) }}">
+                                            {{ task.project.project_name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ task.status|lower|replace(' ', '-') }}">
+                                            {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ task.priority|lower }}">
+                                            {{ task.priority }}
+                                        </span>
+                                    </td>
+                                    <td>{{ task.due_date.strftime('%b %d, %Y') if task.due_date else 'N/A' }}</td>
+                                    <td>
+                                        {% if task.assignments %}
+                                        {% for assignment in task.assignments[:2] %}
+                                        <span class="badge bg-secondary">{{ assignment.user.username }}</span>
+                                        {% endfor %}
+                                        {% if task.assignments|length > 2 %}
+                                        <span class="badge bg-secondary">+{{ task.assignments|length - 2 }}</span>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="text-muted">Unassigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('tasks.view_task', task_id=task.id) }}"
+                                            class="btn btn-sm btn-info" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}"
+                                            class="btn btn-sm btn-warning" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('tasks.delete_task', task_id=task.id) }}"
+                                            style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger btn-delete"
+                                                title="Delete" onclick="return confirm('Are you sure?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-inbox" style="font-size: 4rem; color: #ccc;"></i>
+            <h4 class="mt-3 text-muted">No Tasks Found</h4>
+            <p class="text-muted">No tasks match your criteria.</p>
+            <a href="{{ url_for('tasks.create_task') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus"></i> Create Your First Task
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

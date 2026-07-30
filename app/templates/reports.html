@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-chart-bar"></i> Reports
+        </h1>
+        <button class="btn btn-secondary" onclick="printPage()">
+            <i class="fas fa-print"></i> Print
+        </button>
+    </div>
+
+    {% if user_role in ['admin', 'manager'] %}
+    <!-- Admin Reports -->
+
+    <!-- Overall Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-value">{{ total_tasks }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card success">
+                <div class="card-body">
+                    <div class="stat-value">{{ total_completed }}</div>
+                    <div class="stat-label">Completed Tasks</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card warning">
+                <div class="card-body">
+                    <div class="stat-value">{{ total_pending }}</div>
+                    <div class="stat-label">Pending Tasks</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card info">
+                <div class="card-body">
+                    <div class="stat-value">{{ total_in_progress }}</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority Distribution -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Priority Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Low Priority</strong>
+                            <span class="badge bg-success">{{ priority_distribution.low }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                style="width: {% if total_tasks > 0 %}{{ (priority_distribution.low / total_tasks * 100)|int }}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Medium Priority</strong>
+                            <span class="badge bg-warning">{{ priority_distribution.medium }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-warning" role="progressbar"
+                                style="width: {% if total_tasks > 0 %}{{ (priority_distribution.medium / total_tasks * 100)|int }}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>High Priority</strong>
+                            <span class="badge bg-danger">{{ priority_distribution.high }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-danger" role="progressbar"
+                                style="width: {% if total_tasks > 0 %}{{ (priority_distribution.high / total_tasks * 100)|int }}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Urgent</strong>
+                            <span class="badge bg-dark">{{ priority_distribution.urgent }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-dark" role="progressbar"
+                                style="width: {% if total_tasks > 0 %}{{ (priority_distribution.urgent / total_tasks * 100)|int }}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Overview -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-check-circle"></i> Status Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Pending</strong>
+                            <span class="badge bg-warning">{{ total_pending }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-warning" role="progressbar"
+                                style="width: {% if total_tasks > 0 %}{{ (total_pending / total_tasks * 100)|int }}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>In Progress</strong>
+                            <span class="badge bg-info">{{ total_in_progress }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-info" role="progressbar"
+                                style="width: {% if total_tasks > 0 %}{{ (total_in_progress / total_tasks * 100)|int }}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Completed</strong>
+                            <span class="badge bg-success">{{ total_completed }}</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                style="width: {% if total_tasks > 0 %}{{ (total_completed / total_tasks * 100)|int }}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Wise Reports -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-folder-open"></i> Project-wise Statistics</h5>
+        </div>
+        <div class="card-body">
+            {% if project_stats %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Project Name</th>
+                            <th>Total Tasks</th>
+                            <th>Completed</th>
+                            <th>Pending</th>
+                            <th>In Progress</th>
+                            <th>Completion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in project_stats %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('projects.view_project', project_id=item.project.id) }}">
+                                    {{ item.project.project_name }}
+                                </a>
+                            </td>
+                            <td>{{ item.stats.total_tasks }}</td>
+                            <td><span class="badge bg-success">{{ item.stats.completed_tasks }}</span></td>
+                            <td><span class="badge bg-warning">{{ item.stats.pending_tasks }}</span></td>
+                            <td><span class="badge bg-info">{{ item.stats.in_progress_tasks }}</span></td>
+                            <td>
+                                <div class="progress" style="height: 20px; width: 150px;">
+                                    <div class="progress-bar" role="progressbar"
+                                        style="width: {{ item.stats.completion_rate }}%">
+                                        {{ item.stats.completion_rate }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3">No projects found</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- User/Manager Reports -->
+
+    <!-- User Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="stat-value">{{ user_stats.total }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card success">
+                <div class="card-body">
+                    <div class="stat-value">{{ user_stats.completed }}</div>
+                    <div class="stat-label">Completed Tasks</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card warning">
+                <div class="card-body">
+                    <div class="stat-value">{{ user_stats.pending }}</div>
+                    <div class="stat-label">Pending Tasks</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card info">
+                <div class="card-body">
+                    <div class="stat-value">{{ user_stats.in_progress }}</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Wise Reports -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-folder-open"></i> Your Project Statistics</h5>
+        </div>
+        <div class="card-body">
+            {% if project_stats %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Project Name</th>
+                            <th>Total Tasks</th>
+                            <th>Completed</th>
+                            <th>Pending</th>
+                            <th>In Progress</th>
+                            <th>Completion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in project_stats %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('projects.view_project', project_id=item.project.id) }}">
+                                    {{ item.project.project_name }}
+                                </a>
+                            </td>
+                            <td>{{ item.stats.total_tasks }}</td>
+                            <td><span class="badge bg-success">{{ item.stats.completed_tasks }}</span></td>
+                            <td><span class="badge bg-warning">{{ item.stats.pending_tasks }}</span></td>
+                            <td><span class="badge bg-info">{{ item.stats.in_progress_tasks }}</span></td>
+                            <td>
+                                <div class="progress" style="height: 20px; width: 150px;">
+                                    <div class="progress-bar" role="progressbar"
+                                        style="width: {{ item.stats.completion_rate }}%">
+                                        {{ item.stats.completion_rate }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3">No projects found</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

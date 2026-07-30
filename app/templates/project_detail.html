@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.project_name }} - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3">
+                <i class="fas fa-folder"></i> {{ project.project_name }}
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('projects.list_projects') }}">Projects</a></li>
+                    <li class="breadcrumb-item active">{{ project.project_name }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="{{ url_for('projects.edit_project', project_id=project.id) }}" class="btn btn-warning me-2">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{{ url_for('tasks.create_task') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add Task
+            </a>
+        </div>
+    </div>
+
+    <!-- Project Information -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Project Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Start Date:</strong></p>
+                            <p>{{ project.start_date.strftime('%B %d, %Y') if project.start_date else 'Not set' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>End Date:</strong></p>
+                            <p>{{ project.end_date.strftime('%B %d, %Y') if project.end_date else 'Not set' }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <p><strong>Description:</strong></p>
+                            <p>{{ project.description if project.description else 'No description provided' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="text-muted">Total Tasks</p>
+                        <h4 class="text-primary">{{ stats.total_tasks }}</h4>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-muted">Completed Tasks</p>
+                        <h4 class="text-success">{{ stats.completed_tasks }}</h4>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-muted">Pending Tasks</p>
+                        <h4 class="text-warning">{{ stats.pending_tasks }}</h4>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-muted">In Progress</p>
+                        <h4 class="text-info">{{ stats.in_progress_tasks }}</h4>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: {{ stats.completion_rate ~ '%' }}"
+                            aria-valuenow="{{ stats.completion_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        {{ stats.completion_rate }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Tasks -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-tasks"></i> Tasks</h5>
+        <a href="{{ url_for('tasks.create_task') }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus"></i> New Task
+        </a>
+    </div>
+    <div class="card-body">
+        {% if project.tasks %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Task Name</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Due Date</th>
+                        <th>Assigned To</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in project.tasks %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('tasks.view_task', task_id=task.id) }}">
+                                {{ task.task_name }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ task.status|lower|replace(' ', '-') }}">
+                                {{ task.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ task.priority|lower }}">
+                                {{ task.priority }}
+                            </span>
+                        </td>
+                        <td>{{ task.due_date.strftime('%b %d, %Y') if task.due_date else 'N/A' }}</td>
+                        <td>
+                            {% if task.assignments %}
+                            {% for assignment in task.assignments %}
+                            <span class="badge bg-secondary">{{ assignment.user.username }}</span>
+                            {% endfor %}
+                            {% else %}
+                            <span class="text-muted">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('tasks.view_task', task_id=task.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ url_for('tasks.edit_task', task_id=task.id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('tasks.delete_task', task_id=task.id) }}"
+                                style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger btn-delete"
+                                    onclick="return confirm('Delete this task?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox" style="font-size: 3rem; color: #ccc;"></i>
+            <p class="text-muted mt-3">No tasks in this project yet</p>
+            <a href="{{ url_for('tasks.create_task') }}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus"></i> Create First Task
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

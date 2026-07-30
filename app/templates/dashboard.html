@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TaskFlow{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-chart-line"></i> Dashboard
+        </h1>
+        {% if user_role == 'admin' %}
+        <div>
+            <a href="{{ url_for('projects.create_project') }}" class="btn btn-primary me-2">
+                <i class="fas fa-plus"></i> New Project
+            </a>
+            <a href="{{ url_for('tasks.create_task') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> New Task
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="dashboard-grid">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-value">{{ total_projects }}</div>
+                <div class="stat-label">Total Projects</div>
+                <small class="text-muted"><i class="fas fa-folder"></i> Projects</small>
+            </div>
+        </div>
+
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-value">{{ total_tasks }}</div>
+                <div class="stat-label">Total Tasks</div>
+                <small class="text-muted"><i class="fas fa-tasks"></i> All Tasks</small>
+            </div>
+        </div>
+
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="stat-value">{{ completed_tasks }}</div>
+                <div class="stat-label">Completed Tasks</div>
+                <small class="text-muted"><i class="fas fa-check-circle"></i> Completed</small>
+            </div>
+        </div>
+
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="stat-value">{{ pending_tasks }}</div>
+                <div class="stat-label">Pending Tasks</div>
+                <small class="text-muted"><i class="fas fa-hourglass"></i> Pending</small>
+            </div>
+        </div>
+
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="stat-value">{{ in_progress_tasks }}</div>
+                <div class="stat-label">In Progress Tasks</div>
+                <small class="text-muted"><i class="fas fa-spinner"></i> In Progress</small>
+            </div>
+        </div>
+    </div>
+
+    {% if user_role == 'admin' %}
+    <!-- Admin Dashboard -->
+    <div class="row">
+        <div class="col-lg-6">
+            <!-- Recent Projects -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-recent"></i> Recent Projects</h5>
+                    <a href="{{ url_for('projects.list_projects') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_projects %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in recent_projects %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('projects.view_project', project_id=project.id) }}">
+                                            {{ project.project_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ project.created_at.strftime('%b %d, %Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ project.status }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No projects created yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <!-- Recent Tasks -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-tasks"></i> Recent Tasks</h5>
+                    <a href="{{ url_for('tasks.list_tasks') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task Name</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in recent_tasks %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('tasks.view_task', task_id=task.id) }}">
+                                            {{ task.task_name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ task.status|lower|replace(' ', '-') }}">
+                                            {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ task.priority|lower }}">
+                                            {{ task.priority }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No tasks created yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Statistics -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-users"></i> System Statistics</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <h4 class="text-primary">{{ total_users }}</h4>
+                    <p class="text-muted">Total Users</p>
+                </div>
+                <div class="col-md-4">
+                    <h4 class="text-success">{{ (completed_tasks / total_tasks * 100)|int if total_tasks > 0 else 0 }}%
+                    </h4>
+                    <p class="text-muted">Completion Rate</p>
+                </div>
+                <div class="col-md-4">
+                    <h4 class="text-warning">{{ total_projects }}</h4>
+                    <p class="text-muted">Active Projects</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- User/Manager Dashboard -->
+    {% if user_projects %}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-folder"></i> Your Projects</h5>
+            <a href="{{ url_for('projects.create_project') }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> New Project
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="project-grid">
+                {% for project in user_projects %}
+                <div class="project-card">
+                    <h5>{{ project.project_name }}</h5>
+                    <p>{{ project.description[:100] if project.description else 'No description' }}...</p>
+                    <div class="project-meta">
+                        <small>
+                            <i class="fas fa-tasks"></i>
+                            {{ project.tasks|length }} Tasks
+                        </small>
+                    </div>
+                    <a href="{{ url_for('projects.view_project', project_id=project.id) }}"
+                        class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if user_tasks %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-tasks"></i> Your Recent Tasks</h5>
+            <a href="{{ url_for('tasks.list_tasks') }}" class="btn btn-sm btn-primary">View All</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Task Name</th>
+                            <th>Project</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Due Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in user_tasks %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('tasks.view_task', task_id=task.id) }}">
+                                    {{ task.task_name }}
+                                </a>
+                            </td>
+                            <td>{{ task.project.project_name }}</td>
+                            <td>
+                                <span class="badge badge-{{ task.status|lower|replace(' ', '-') }}">
+                                    {{ task.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ task.priority|lower }}">
+                                    {{ task.priority }}
+                                </span>
+                            </td>
+                            <td>{{ task.due_date.strftime('%b %d, %Y') if task.due_date else 'No due date' }}</td>
+                            <td>
+                                <a href="{{ url_for('tasks.view_task', task_id=task.id) }}"
+                                    class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
